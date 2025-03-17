@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式個人簡介卡片</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+        
+        .card-container {
+            width: 300px;
+            height: 400px;
+            perspective: 1000px;
+            margin: 20px;
+        }
+        
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        
+        .card-container:hover .card,
+        .card-container.flipped .card {
+            transform: rotateY(180deg);
+        }
+        
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .card-front {
+            background-color: #ffffff;
+        }
+        
+        .card-back {
+            background-color: #3498db;
+            color: white;
+            transform: rotateY(180deg);
+        }
+        
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            border: 5px solid #3498db;
+        }
+        
+        h2 {
+            margin-bottom: 10px;
+        }
+        
+        p {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .interests {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .interest-tag {
+            background-color: rgba(255,255,255,0.2);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        
+        .contact-info {
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .flip-instructions {
+            position: absolute;
+            bottom: 10px;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container" id="profileCard">
+        <div class="card">
+            <div class="card-front">
+                <img src="assets/1736506264593.jpg" alt="個人照片" class="profile-image">
+                <h2>李崧瑋</h2>
+                <h3>Alvin</h3>
+                <p>全端開發工程師</p>
+                <p>美好的使用者體驗及高效的程式邏輯</p>
+                <span class="flip-instructions">點擊或滑鼠懸停查看更多</span>
+            </div>
+            <div class="card-back">
+                <h2>關於我</h2>
+                <p>擁有一年全端開發經驗，專注於打造符合使用者需求的互動介面於程式邏輯。</p>
+                
+                <div class="interests">
+                    <span class="interest-tag">JavaScript</span>
+                    <span class="interest-tag">React</span>
+                    <span class="interest-tag">JAVA</span>
+                    <span class="interest-tag">Agile</span>
+                    <span class="interest-tag">Docker</span>
+                    <span class="interest-tag">K8s</span>
+                </div>
+                
+                <div class="contact-info">
+                    <div class="contact-item">Email: alvin930490@gmail.com</div>
+                    <div class="contact-item">電話: 0988-096-XXX</div>
+                    <div class="contact-item">GitHub: github.com/alvin930481</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 點擊卡片也可以翻轉
+        document.getElementById('profileCard').addEventListener('click', function() {
+            this.classList.toggle('flipped');
+        });
+    </script>
+</body>
+</html>

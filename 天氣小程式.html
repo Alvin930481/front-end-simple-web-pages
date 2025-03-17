@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天氣小工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.3s;
+        }
+        
+        body.dark-mode {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+        
+        .weather-container {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .dark-mode .weather-container {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .weather-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            color: white;
+            background-color: #3498db;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+        
+        .weather-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            z-index: -1;
+        }
+        
+        .city-selector {
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 16px;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        /* 天氣主題背景 */
+        .sunny {
+            background-color: #f39c12;
+        }
+        
+        .cloudy {
+            background-color: #7f8c8d;
+        }
+        
+        .rainy {
+            background-color: #3498db;
+        }
+        
+        .night {
+            background-color: #2c3e50;
+        }
+        
+        .weather-body {
+            padding: 20px;
+            background-color: white;
+            transition: background-color 0.3s;
+        }
+        
+        .dark-mode .weather-body {
+            background-color: #34495e;
+        }
+        
+        .current-weather {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .weather-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .temperature {
+            font-size: 48px;
+            font-weight: bold;
+        }
+        
+        .weather-description {
+            margin-top: 5px;
+            font-size: 18px;
+            color: #7f8c8d;
+        }
+        
+        .dark-mode .weather-description {
+            color: #bdc3c7;
+        }
+        
+        .weather-icon {
+            font-size: 60px;
+            margin-left: 20px;
+        }
+        
+        .weather-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .dark-mode .weather-details {
+            border-bottom: 1px solid #2c3e50;
+        }
+        
+        .detail {
+            text-align: center;
+        }
+        
+        .detail-label {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .dark-mode .detail-label {
+            color: #bdc3c7;
+        }
+        
+        .detail-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .forecast {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .forecast-item {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .forecast-item:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .dark-mode .forecast-item:hover {
+            background-color: #2c3e50;
+        }
+        
+        .forecast-day {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .forecast-icon {
+            font-size: 24px;
+            margin: 5px 0;
+        }
+        
+        .forecast-temp {
+            font-size: 16px;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle">🌓</button>
+    
+    <div class="weather-container">
+        <div class="weather-header" id="weatherHeader">
+            <h2>天氣預報</h2>
+            <select class="city-selector" id="citySelector">
+                <option value="taipei">台北</option>
+                <option value="taichung">台中</option>
+                <option value="kaohsiung">高雄</option>
+                <option value="hualien">花蓮</option>
+            </select>
+        </div>
+        
+        <div class="weather-body">
+            <div class="current-weather">
+                <div class="weather-info">
+                    <span class="temperature" id="temperature">26°C</span>
+                    <span class="weather-description" id="weatherDescription">晴時多雲</span>
+                </div>
+                <div class="weather-icon" id="weatherIcon">☀️</div>
+            </div>
+            
+            <div class="weather-details">
+                <div class="detail">
+                    <div class="detail-label">濕度</div>
+                    <div class="detail-value" id="humidity">65%</div>
+                </div>
+                <div class="detail">
+                    <div class="detail-label">風速</div>
+                    <div class="detail-value" id="windSpeed">5 m/s</div>
+                </div>
+                <div class="detail">
+                    <div class="detail-label">氣壓</div>
+                    <div class="detail-value" id="pressure">1013 hPa</div>
+                </div>
+            </div>
+            
+            <div class="forecast" id="forecast">
+                <!-- 天氣預報會透過JavaScript動態生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 模擬天氣數據
+        const weatherData = {
+            taipei: {
+                current: {
+                    temp: 26,
+                    weather: "晴時多雲",
+                    icon: "☀️",
+                    humidity: "65%",
+                    windSpeed: "5 m/s",
+                    pressure: "1013 hPa"
+                },
+                forecast: [
+                    { day: "今天", weather: "晴時多雲", icon: "⛅", maxTemp: 27, minTemp: 23 },
+                    { day: "明天", weather: "晴朗", icon: "☀️", maxTemp: 29, minTemp: 24 }
+                ]
+            },
+            taichung: {
+                current: {
+                    temp: 28,
+                    weather: "晴朗",
+                    icon: "☀️",
+                    humidity: "60%",
+                    windSpeed: "4 m/s",
+                    pressure: "1012 hPa"
+                },
+                forecast: [
+                    { day: "今天", weather: "晴朗", icon: "☀️", maxTemp: 30, minTemp: 25 },
+                    { day: "明天", weather: "晴時多雲", icon: "⛅", maxTemp: 29, minTemp: 24 }
+                ]
+            },
+            kaohsiung: {
+                current: {
+                    temp: 30,
+                    weather: "多雲",
+                    icon: "☁️",
+                    humidity: "70%",
+                    windSpeed: "6 m/s",
+                    pressure: "1010 hPa"
+                },
+                forecast: [
+                    { day: "今天", weather: "多雲", icon: "☁️", maxTemp: 32, minTemp: 26 },
+                    { day: "明天", weather: "雷陣雨", icon: "⛈️", maxTemp: 31, minTemp: 25 }
+                ]
+            },
+            hualien: {
+                current: {
+                    temp: 25,
+                    weather: "多雲時晴",
+                    icon: "⛅",
+                    humidity: "75%",
+                    windSpeed: "7 m/s",
+                    pressure: "1011 hPa"
+                },
+                forecast: [
+                    { day: "今天", weather: "多雲時晴", icon: "⛅", maxTemp: 27, minTemp: 22 },
+                    { day: "明天", weather: "雨天", icon: "🌧️", maxTemp: 25, minTemp: 21 }
+                ]
+            }
+        };
+        
+        // 獲取DOM元素
+        const citySelector = document.getElementById('citySelector');
+        const weatherHeader = document.getElementById('weatherHeader');
+        const temperature = document.getElementById('temperature');
+        const weatherDescription = document.getElementById('weatherDescription');
+        const weatherIcon = document.getElementById('weatherIcon');
+        const humidity = document.getElementById('humidity');
+        const windSpeed = document.getElementById('windSpeed');
+        const pressure = document.getElementById('pressure');
+        const forecast = document.getElementById('forecast');
+        const themeToggle = document.getElementById('themeToggle');
+        
+        // 更新天氣資訊
+        function updateWeather(city) {
+            const data = weatherData[city];
+            
+            // 更新當前天氣
+            temperature.textContent = `${data.current.temp}°C`;
+            weatherDescription.textContent = data.current.weather;
+            weatherIcon.textContent = data.current.icon;
+            humidity.textContent = data.current.humidity;
+            windSpeed.textContent = data.current.windSpeed;
+            pressure.textContent = data.current.pressure;
+            
+            // 更新天氣背景主題
+            setWeatherTheme(data.current.weather);
+            
+            // 更新天氣預報
+            forecast.innerHTML = '';
+            data.forecast.forEach(day => {
+                const forecastItem = document.createElement('div');
+                forecastItem.className = 'forecast-item';
+                forecastItem.innerHTML = `
+                    <div class="forecast-day">${day.day}</div>
+                    <div class="forecast-icon">${day.icon}</div>
+                    <div class="forecast-temp">${day.minTemp}° - ${day.maxTemp}°</div>
+                `;
+                forecast.appendChild(forecastItem);
+            });
+        }
+        
+        // 設置天氣主題
+        function setWeatherTheme(weather) {
+            weatherHeader.className = 'weather-header';
+            
+            if (weather.includes('晴') && !weather.includes('雨')) {
+                weatherHeader.classList.add('sunny');
+            } else if (weather.includes('多雲') || weather.includes('陰')) {
+                weatherHeader.classList.add('cloudy');
+            } else if (weather.includes('雨') || weather.includes('雷')) {
+                weatherHeader.classList.add('rainy');
+            }
+            
+            // 檢查是否為晚間
+            const currentHour = new Date().getHours();
+            if (currentHour < 6 || currentHour > 18) {
+                weatherHeader.classList.add('night');
+                if (!document.body.classList.contains('dark-mode')) {
+                    toggleDarkMode();
+                }
+            }
+        }
+        
+        // 切換暗/亮模式
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+        }
+        
+        // 城市選擇事件
+        citySelector.addEventListener('change', function() {
+            updateWeather(this.value);
+        });
+        
+        // 主題切換事件
+        themeToggle.addEventListener('click', toggleDarkMode);
+        
+        // 初始載入台北的天氣
+        updateWeather('taipei');
+        
+        // 自動根據時間設置亮/暗模式
+        const currentHour = new Date().getHours();
+        if (currentHour < 6 || currentHour > 18) {
+            document.body.classList.add('dark-mode');
+        }
+    </script>
+</body>
+</html>

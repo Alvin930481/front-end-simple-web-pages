@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互動式計算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .calculator {
+            background-color: #2c3e50;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 300px;
+            padding: 20px;
+        }
+        
+        .screen {
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: right;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .history {
+            min-height: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .result {
+            min-height: 40px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-gap: 10px;
+        }
+        
+        button {
+            border: none;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        
+        button:active {
+            transform: scale(0.95);
+        }
+        
+        .number {
+            background-color: #34495e;
+            color: white;
+        }
+        
+        .number:hover {
+            background-color: #2c3e50;
+        }
+        
+        .operator {
+            background-color: #e67e22;
+            color: white;
+        }
+        
+        .operator:hover {
+            background-color: #d35400;
+        }
+        
+        .equals {
+            background-color: #27ae60;
+            color: white;
+            grid-column: span 2;
+        }
+        
+        .equals:hover {
+            background-color: #2ecc71;
+        }
+        
+        .clear, .delete {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .clear:hover, .delete:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="screen">
+            <div class="history" id="history"></div>
+            <div class="result" id="result">0</div>
+        </div>
+        <div class="buttons">
+            <button class="clear" id="clear">C</button>
+            <button class="delete" id="delete">⌫</button>
+            <button class="operator" id="divide">÷</button>
+            <button class="operator" id="multiply">×</button>
+            
+            <button class="number">7</button>
+            <button class="number">8</button>
+            <button class="number">9</button>
+            <button class="operator" id="subtract">−</button>
+            
+            <button class="number">4</button>
+            <button class="number">5</button>
+            <button class="number">6</button>
+            <button class="operator" id="add">+</button>
+            
+            <button class="number">1</button>
+            <button class="number">2</button>
+            <button class="number">3</button>
+            <button class="number">0</button>
+            
+            <button class="number" id="decimal">.</button>
+            <button class="equals" id="equals">=</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 獲取DOM元素
+            const historyElement = document.getElementById('history');
+            const resultElement = document.getElementById('result');
+            const buttons = document.querySelectorAll('button');
+            
+            // 計算器狀態
+            let currentInput = '0';
+            let previousInput = '';
+            let operation = undefined;
+            let shouldResetScreen = false;
+            
+            // 更新畫面
+            function updateDisplay() {
+                resultElement.textContent = currentInput;
+                if (operation != null) {
+                    historyElement.textContent = `${previousInput} ${getOperationSymbol(operation)}`;
+                } else {
+                    historyElement.textContent = '';
+                }
+            }
+            
+            // 獲取運算符號
+            function getOperationSymbol(operation) {
+                switch(operation) {
+                    case 'add': return '+';
+                    case 'subtract': return '−';
+                    case 'multiply': return '×';
+                    case 'divide': return '÷';
+                    default: return '';
+                }
+            }
+            
+            // 添加數字
+            function appendNumber(number) {
+                if (shouldResetScreen || currentInput === '0') {
+                    currentInput = number;
+                    shouldResetScreen = false;
+                } else {
+                    currentInput += number;
+                }
+                updateDisplay();
+            }
+            
+            // 添加小數點
+            function appendDecimal() {
+                if (shouldResetScreen) {
+                    currentInput = '0.';
+                    shouldResetScreen = false;
+                } else if (!currentInput.includes('.')) {
+                    currentInput += '.';
+                }
+                updateDisplay();
+            }
+            
+            // 設置運算符
+            function setOperation(op) {
+                if (operation !== undefined) {
+                    calculate();
+                }
+                previousInput = currentInput;
+                operation = op;
+                shouldResetScreen = true;
+                updateDisplay();
+            }
+            
+            // 計算結果
+            function calculate() {
+                let computation;
+                const prev = parseFloat(previousInput);
+                const current = parseFloat(currentInput);
+                
+                if (isNaN(prev) || isNaN(current)) return;
+                
+                switch (operation) {
+                    case 'add':
+                        computation = prev + current;
+                        break;
+                    case 'subtract':
+                        computation = prev - current;
+                        break;
+                    case 'multiply':
+                        computation = prev * current;
+                        break;
+                    case 'divide':
+                        if (current === 0) {
+                            alert('無法除以零！');
+                            clear();
+                            return;
+                        }
+                        computation = prev / current;
+                        break;
+                    default:
+                        return;
+                }
+                
+                // 處理結果，最多顯示10位數字
+                currentInput = computation.toString().slice(0, 10);
+                operation = undefined;
+                previousInput = '';
+                updateDisplay();
+            }
+            
+            // 清除
+            function clear() {
+                currentInput = '0';
+                previousInput = '';
+                operation = undefined;
+                updateDisplay();
+            }
+            
+            // 刪除最後一個字符
+            function deleteNumber() {
+                currentInput = currentInput.toString().slice(0, -1);
+                if (currentInput === '') {
+                    currentInput = '0';
+                }
+                updateDisplay();
+            }
+            
+            // 綁定按鈕事件
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // 數字按鈕
+                    if (button.classList.contains('number') && !button.id) {
+                        appendNumber(button.textContent);
+                    }
+                    
+                    // 小數點按鈕
+                    if (button.id === 'decimal') {
+                        appendDecimal();
+                    }
+                    
+                    // 運算符按鈕
+                    if (button.classList.contains('operator')) {
+                        setOperation(button.id);
+                    }
+                    
+                    // 等號按鈕
+                    if (button.id === 'equals') {
+                        calculate();
+                    }
+                    
+                    // 清除按鈕
+                    if (button.id === 'clear') {
+                        clear();
+                    }
+                    
+                    // 刪除按鈕
+                    if (button.id === 'delete') {
+                        deleteNumber();
+                    }
+                });
+            });
+            
+            // 鍵盤支援
+            document.addEventListener('keydown', function(event) {
+                if (/^[0-9]$/.test(event.key)) {
+                    appendNumber(event.key);
+                }
+                
+                if (event.key === '.') {
+                    appendDecimal();
+                }
+                
+                if (event.key === '+') {
+                    setOperation('add');
+                }
+                
+                if (event.key === '-') {
+                    setOperation('subtract');
+                }
+                
+                if (event.key === '*') {
+                    setOperation('multiply');
+                }
+                
+                if (event.key === '/') {
+                    event.preventDefault(); // 防止觸發瀏覽器的尋找功能
+                    setOperation('divide');
+                }
+                
+                if (event.key === 'Enter' || event.key === '=') {
+                    calculate();
+                }
+                
+                if (event.key === 'Escape') {
+                    clear();
+                }
+                
+                if (event.key === 'Backspace') {
+                    deleteNumber();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
